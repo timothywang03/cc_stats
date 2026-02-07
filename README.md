@@ -1,4 +1,4 @@
-# Civil War Stat Taker (Front End)
+# CC Stat Taker (Front End)
 
 This project renders `main.jsx` as a standalone React front end using Vite.
 
