@@ -88,7 +88,7 @@ export default function AnalyticsView({
               <th className="px-4 py-1.5 text-center">Total Misses</th>
               <th className="px-4 py-1.5 text-center">Shooting %</th>
               <th className="px-4 py-1.5 text-center">Avg Shots / Turn</th>
-              <th className="px-4 py-1.5 text-center">Avg Misses / Turn</th>
+              <th className="px-4 py-1.5 text-center">Avg Makes / Turn</th>
               <th className="px-4 py-1.5 text-center">Early Game %</th>
               <th className="px-4 py-1.5 text-center">Late Game %</th>
             </tr>
@@ -108,7 +108,7 @@ export default function AnalyticsView({
               const earlyPct = calculatePercentage(derived.earlyMakes, derived.earlyShots);
               const latePct = calculatePercentage(derived.lateMakes, derived.lateShots);
               const avgShotsPerTurn = derived.turns === 0 ? 0 : p.shots / derived.turns;
-              const avgMissesPerTurn = derived.turns === 0 ? 0 : p.misses / derived.turns;
+              const avgMakesPerTurn = derived.turns === 0 ? 0 : p.makes / derived.turns;
 
               return (
                 <tr key={name} className="hover:bg-gray-50">
@@ -126,7 +126,7 @@ export default function AnalyticsView({
                     </span>
                   </td>
                   <td className="px-4 py-1.5 text-center text-gray-600">{formatAvg(avgShotsPerTurn)}</td>
-                  <td className="px-4 py-1.5 text-center text-gray-600">{formatAvg(avgMissesPerTurn)}</td>
+                  <td className="px-4 py-1.5 text-center text-gray-600">{formatAvg(avgMakesPerTurn)}</td>
                   <td className="px-4 py-1.5 text-center">
                     <div className="flex flex-col items-center">
                       <span className="font-bold text-yellow-700">{earlyPct}%</span>
