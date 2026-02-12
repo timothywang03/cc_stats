@@ -107,6 +107,10 @@ export default function CCStatTaker() {
     }));
   };
 
+  const clearCurrentVolleySelections = () => {
+    setCurrentVolleyShots({});
+  };
+
   const submitVolley = () => {
     const missingShots = activeIndices.some((idx) => !currentVolleyShots[idx]);
     if (missingShots) {
@@ -259,6 +263,7 @@ export default function CCStatTaker() {
           activeIndices={activeIndices}
           currentVolleyShots={currentVolleyShots}
           handleShotSelection={handleShotSelection}
+          clearCurrentVolleySelections={clearCurrentVolleySelections}
           submitVolley={submitVolley}
           redTeam={redTeam}
           blueTeam={blueTeam}

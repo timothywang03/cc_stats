@@ -17,6 +17,7 @@ export default function PlayView({
   activeIndices,
   currentVolleyShots,
   handleShotSelection,
+  clearCurrentVolleySelections,
   submitVolley,
   redTeam,
   blueTeam,
@@ -82,8 +83,16 @@ export default function PlayView({
           <Button variant="secondary" className="bg-white/90 text-gray-900 border-white/30 hover:bg-white" onClick={downloadSpreadsheet}>
             <Save className="w-4 h-4" /> Download CSV
           </Button>
-          <Button variant="ghost" className="text-white hover:bg-white/10" onClick={() => setGameState('setup')}>
-            <RotateCcw className="w-4 h-4" /> Reset
+          <Button
+            variant="ghost"
+            className="text-white hover:bg-white/10"
+            onClick={() => {
+              if (window.confirm('Are you sure you want to completely reset this game? This action cannot be undone.')) {
+                setGameState('setup');
+              }
+            }}
+          >
+            <RotateCcw className="w-4 h-4" /> Reset Game
           </Button>
         </div>
       </Card>
@@ -111,10 +120,20 @@ export default function PlayView({
         {activeTab === 'input' && (
           <div className="space-y-6">
             <div className={`p-4 rounded-xl border ${currentTeam === 'red' ? 'border-red-100 bg-red-50' : 'border-blue-100 bg-blue-50'}`}>
-              <h3 className={`text-lg font-bold mb-4 flex items-center gap-2 ${teamColorText}`}>
-                Shooters for this Volley
-                {activeIndices.length < 6 && <span className="text-xs bg-white px-2 py-0.5 rounded border shadow-sm">Balls Back Active</span>}
-              </h3>
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <h3 className={`text-lg font-bold flex items-center gap-2 ${teamColorText}`}>
+                  Shooters for this Volley
+                  {activeIndices.length < 6 && <span className="text-xs bg-white px-2 py-0.5 rounded border shadow-sm">Balls Back Active</span>}
+                </h3>
+                <Button
+                  variant="secondary"
+                  className="px-3 py-1 text-xs"
+                  onClick={clearCurrentVolleySelections}
+                  disabled={Object.keys(currentVolleyShots).length === 0}
+                >
+                  Unselect All
+                </Button>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {activeIndices.map((playerIdx) => {
