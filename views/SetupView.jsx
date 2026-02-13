@@ -15,6 +15,7 @@ export default function SetupView({
   setRedTeam,
   blueTeam,
   setBlueTeam,
+  isStartingGame = false,
   startGame,
 }) {
   return (
@@ -110,8 +111,8 @@ export default function SetupView({
         </div>
 
         <div className="mt-8 pt-6 border-t border-gray-100 flex justify-end">
-          <Button onClick={startGame} className="w-full md:w-auto px-8">
-            Start Game <ChevronRight className="w-4 h-4" />
+          <Button onClick={startGame} disabled={isStartingGame} className="w-full md:w-auto px-8">
+            {isStartingGame ? 'Starting...' : 'Start Game'} <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
       </Card>

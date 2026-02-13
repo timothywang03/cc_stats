@@ -55,7 +55,7 @@ export default function PlayView({
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
-      <Card className="p-4 bg-gray-900 text-white border-none space-y-4">
+      <Card className="p-4 !bg-gray-900 !text-white !border-0 space-y-4">
         <div className="w-full text-center md:text-left">
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">{displayGameName}</h2>
         </div>
@@ -88,7 +88,7 @@ export default function PlayView({
 
           <div className="flex items-center gap-2">
             <Button variant="secondary" className="bg-white/90 text-gray-900 border-white/30 hover:bg-white" onClick={downloadSpreadsheet}>
-              <Save className="w-4 h-4" /> Download CSV
+              <Save className="w-4 h-4" /> Download Game Stats
             </Button>
             <Button
               variant="ghost"
