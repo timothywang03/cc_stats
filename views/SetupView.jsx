@@ -5,6 +5,8 @@ import { Card, Button } from '../components/ui';
 export default function SetupView({
   isLeague,
   setIsLeague,
+  gameName,
+  setGameName,
   redTeamName,
   setRedTeamName,
   blueTeamName,
@@ -37,6 +39,16 @@ export default function SetupView({
             />
             <span className="font-medium text-gray-700">League Game</span>
           </label>
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Game Name</label>
+          <input
+            value={gameName}
+            onChange={(e) => setGameName(e.target.value)}
+            className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+            placeholder="Friday Night Match"
+          />
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">

@@ -73,6 +73,7 @@ const getEarlyLateStats = (playerData) => {
 export default function CCStatTaker() {
   const [gameState, setGameState] = useState('setup');
   const [isLeague, setIsLeague] = useState(false);
+  const [gameName, setGameName] = useState('');
 
   const [redTeamName, setRedTeamName] = useState('Red Team');
   const [blueTeamName, setBlueTeamName] = useState('Blue Team');
@@ -238,6 +239,8 @@ export default function CCStatTaker() {
         <SetupView
           isLeague={isLeague}
           setIsLeague={setIsLeague}
+          gameName={gameName}
+          setGameName={setGameName}
           redTeamName={redTeamName}
           setRedTeamName={setRedTeamName}
           blueTeamName={blueTeamName}
@@ -250,6 +253,7 @@ export default function CCStatTaker() {
         />
       ) : (
         <PlayView
+          gameName={gameName}
           isLeague={isLeague}
           turnNumber={turnNumber}
           currentTeam={currentTeam}

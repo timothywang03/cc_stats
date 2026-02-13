@@ -4,6 +4,7 @@ import { Card, Button } from '../components/ui';
 import AnalyticsView from './AnalyticsView';
 
 export default function PlayView({
+  gameName,
   isLeague,
   turnNumber,
   currentTeam,
@@ -33,6 +34,7 @@ export default function PlayView({
   const currentTeamName = currentTeam === 'red' ? redTeamName : blueTeamName;
   const currentTeamPlayers = currentTeam === 'red' ? redTeam : blueTeam;
   const teamColorText = currentTeam === 'red' ? 'text-red-600' : 'text-blue-600';
+  const displayGameName = gameName?.trim() || 'Untitled Game';
   const playerRows = [
     ...redTeam.map((name, index) => ({ team: 'red', name, index })),
     ...blueTeam.map((name, index) => ({ team: 'blue', name, index })),
@@ -53,47 +55,53 @@ export default function PlayView({
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
-      <Card className="p-4 flex flex-col md:flex-row items-center justify-between gap-4 bg-gray-900 text-white border-none">
-        <div className="flex items-center gap-4">
-          <div className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/10">
-            {isLeague ? 'League Match' : 'Exhibition'}
-          </div>
-          <div className="h-6 w-px bg-white/20"></div>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-400">Current:</span>
-            <span className="text-xl font-bold">Turn {turnNumber}</span>
-          </div>
-          <div className="h-6 w-px bg-white/20"></div>
-          <div className="flex items-center gap-2">
-            <span className="text-gray-400">Score:</span>
-            <span className="text-xl font-bold text-red-400"> {teamScores.red} </span>
-            <span className="text-xl font-bold text-blue-400"> {teamScores.blue} </span>
-          </div>
+      <Card className="p-4 bg-gray-900 text-white border-none space-y-4">
+        <div className="w-full text-center md:text-left">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight">{displayGameName}</h2>
         </div>
 
-        <div className="flex items-center gap-3">
-          <span className="text-gray-400">Active Team:</span>
-          <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full font-bold ${currentTeam === 'red' ? 'bg-red-600' : 'bg-blue-600'}`}>
-            <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
-            {currentTeamName}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/10">
+              {isLeague ? 'League Match' : 'Exhibition'}
+            </div>
+            <div className="h-6 w-px bg-white/20"></div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-400">Current:</span>
+              <span className="text-xl font-bold">Turn {turnNumber}</span>
+            </div>
+            <div className="h-6 w-px bg-white/20"></div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-400">Score:</span>
+              <span className="text-xl font-bold text-red-400"> {teamScores.red} </span>
+              <span className="text-xl font-bold text-blue-400"> {teamScores.blue} </span>
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" className="bg-white/90 text-gray-900 border-white/30 hover:bg-white" onClick={downloadSpreadsheet}>
-            <Save className="w-4 h-4" /> Download CSV
-          </Button>
-          <Button
-            variant="ghost"
-            className="text-white hover:bg-white/10"
-            onClick={() => {
-              if (window.confirm('Are you sure you want to completely reset this game? This action cannot be undone.')) {
-                setGameState('setup');
-              }
-            }}
-          >
-            <RotateCcw className="w-4 h-4" /> Reset Game
-          </Button>
+          <div className="flex items-center gap-3">
+            <span className="text-gray-400">Active Team:</span>
+            <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full font-bold ${currentTeam === 'red' ? 'bg-red-600' : 'bg-blue-600'}`}>
+              <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+              {currentTeamName}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" className="bg-white/90 text-gray-900 border-white/30 hover:bg-white" onClick={downloadSpreadsheet}>
+              <Save className="w-4 h-4" /> Download CSV
+            </Button>
+            <Button
+              variant="ghost"
+              className="text-white hover:bg-white/10"
+              onClick={() => {
+                if (window.confirm('Are you sure you want to completely reset this game? This action cannot be undone.')) {
+                  setGameState('setup');
+                }
+              }}
+            >
+              <RotateCcw className="w-4 h-4" /> Reset Game
+            </Button>
+          </div>
         </div>
       </Card>
 
