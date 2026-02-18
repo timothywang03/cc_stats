@@ -621,78 +621,132 @@ export default function CCStatTaker() {
   };
 
   const downloadSpreadsheet = () => {
-    const buildTeamAnalytics = (players, teamLabel) =>
-      players.map((name) => {
-        const p = stats[name];
-        if (!p) {
-          return {
-            playerName: name,
-            shots: 0,
-            makes: 0,
-            misses: 0,
-            shootingPct: 0,
-            earlyPct: 0,
-            latePct: 0,
-            shotBreakdown: {
-              miss: 0,
-              top: 0,
-              top_island: 0,
-              bottom: 0,
-              bottom_island: 0,
-            },
-          };
-        }
+    const csvEscape = (value) => {
+      const text = String(value ?? '');
+      if (/[",\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
+      return text;
+    };
+    const toCsvLine = (cells) => cells.map(csvEscape).join(',');
+    const lines = [];
 
-        const { earlyPct, latePct } = getEarlyLateStats(p);
-        return {
-          playerName: name,
-          team: teamLabel,
-          shots: p.shots,
-          makes: p.makes,
-          misses: p.misses,
-          shootingPct: calculatePercentage(p.makes, p.shots),
-          earlyPct,
-          latePct,
-          shotBreakdown: {
-            miss: p.types.miss || 0,
-            top: p.types.top || 0,
-            top_island: p.types.top_island || 0,
-            bottom: p.types.bottom || 0,
-            bottom_island: p.types.bottom_island || 0,
-          },
-        };
+    const sortedHistory = [...history].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    const volleyHeaders = sortedHistory.map((_, index) => `V${index + 1}`);
+    const volleyTurns = sortedHistory.map((volley) => volley.turnNumber);
+    const volleyTeams = sortedHistory.map((volley) => (volley.team === 'red' ? redTeamName : blueTeamName));
+
+    const teamScores = sortedHistory.reduce(
+      (acc, volley) => {
+        const points = Object.values(volley.shots).reduce((sum, shotId) => {
+          const shot = SHOT_TYPES.find((s) => s.id === shotId);
+          return sum + (shot?.value || 0);
+        }, 0);
+        if (volley.team === 'red') acc.red += points;
+        if (volley.team === 'blue') acc.blue += points;
+        return acc;
+      },
+      { red: 0, blue: 0 }
+    );
+    const teamTurns = sortedHistory.reduce(
+      (acc, volley) => {
+        if (volley.team === 'red') acc.red += 1;
+        if (volley.team === 'blue') acc.blue += 1;
+        return acc;
+      },
+      { red: 0, blue: 0 }
+    );
+
+    lines.push(toCsvLine(['Game Name', gameName?.trim() || 'Untitled Game']));
+    lines.push(toCsvLine(['Game Date', new Date().toISOString().split('T')[0]]));
+    lines.push(toCsvLine(['Current Turn Number', turnNumber]));
+    lines.push(toCsvLine(['Current Team', currentTeam === 'red' ? redTeamName : blueTeamName]));
+    lines.push('');
+
+    lines.push(toCsvLine(['Shot Grid']));
+    lines.push(toCsvLine(['Row Type', 'Team', 'Player', ...volleyHeaders]));
+    lines.push(toCsvLine(['Turn #', '', '', ...volleyTurns]));
+    lines.push(toCsvLine(['Volley Team', '', '', ...volleyTeams]));
+
+    const addTeamShotRows = (teamKey, teamName, players) => {
+      players.forEach((playerName, playerIndex) => {
+        const shotCells = sortedHistory.map((volley) => {
+          if (volley.team !== teamKey) return '';
+          const shotId = volley.shots[playerIndex];
+          const shot = SHOT_TYPES.find((s) => s.id === shotId);
+          return shot ? shot.label : '';
+        });
+        lines.push(toCsvLine(['Player', teamName, playerName, ...shotCells]));
       });
-
-    const exportPayload = {
-      game: {
-        name: gameName?.trim() || 'Untitled Game',
-        isLeague,
-        turnNumber,
-        currentTeam,
-        teams: {
-          red: {
-            name: redTeamName,
-            players: redTeam,
-          },
-          blue: {
-            name: blueTeamName,
-            players: blueTeam,
-          },
-        },
-      },
-      history,
-      analytics: {
-        redTeam: buildTeamAnalytics(redTeam, redTeamName),
-        blueTeam: buildTeamAnalytics(blueTeam, blueTeamName),
-      },
-      exportedAt: new Date().toISOString(),
     };
 
-    const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json;charset=utf-8;' });
+    addTeamShotRows('red', redTeamName, redTeam);
+    addTeamShotRows('blue', blueTeamName, blueTeam);
+    lines.push('');
+
+    lines.push(toCsvLine(['Team Summary']));
+    lines.push(toCsvLine(['Team', 'Turns', 'Score']));
+    lines.push(toCsvLine([redTeamName, teamTurns.red, teamScores.red]));
+    lines.push(toCsvLine([blueTeamName, teamTurns.blue, teamScores.blue]));
+    lines.push('');
+
+    lines.push(toCsvLine(['Player Stats']));
+    lines.push(
+      toCsvLine([
+        'Team',
+        'Player',
+        '# Shots',
+        '# Top',
+        '# Bottom',
+        '# Top Island',
+        '# Bottom Island',
+        'Total Cups',
+        'Misses',
+        'Shooting %',
+        'Average SPT',
+        'Average MPT',
+        'Early Game %',
+        'Late Game %',
+      ])
+    );
+
+    const addPlayerStatsRows = (teamKey, teamName, players) => {
+      const turnsForTeam = teamTurns[teamKey];
+      players.forEach((playerName) => {
+        const p = stats[playerName] || { shots: 0, makes: 0, misses: 0, types: {} };
+        const { earlyPct, earlyCount, latePct, lateCount } = getEarlyLateStats(p);
+        const shootingPct = calculatePercentage(p.makes, p.shots);
+        const avgSpt = turnsForTeam > 0 ? (p.shots / turnsForTeam).toFixed(2) : 'N.A.';
+        const avgMpt = turnsForTeam > 0 ? (p.makes / turnsForTeam).toFixed(2) : 'N.A.';
+
+        lines.push(
+          toCsvLine([
+            teamName,
+            playerName,
+            p.shots,
+            p.types.top || 0,
+            p.types.bottom || 0,
+            p.types.top_island || 0,
+            p.types.bottom_island || 0,
+            p.makes,
+            p.misses,
+            `${shootingPct}%`,
+            avgSpt,
+            avgMpt,
+            earlyCount === 0 ? 'N.A.' : `${earlyPct}%`,
+            lateCount === 0 ? 'N.A.' : `${latePct}%`,
+          ])
+        );
+      });
+    };
+
+    addPlayerStatsRows('red', redTeamName, redTeam);
+    addPlayerStatsRows('blue', blueTeamName, blueTeam);
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
+    const gameSlug = (gameName?.trim() || 'game').replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '');
     link.href = url;
-    link.download = `cc_game_stats_${new Date().toISOString().split('T')[0]}.json`;
+    link.download = `cc_game_stats_${gameSlug}_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
